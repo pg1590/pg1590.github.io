@@ -32,3 +32,6 @@ resume/resume.pdf
 # local assistant notes from the Astro starter
 CLAUDE.md
 AGENTS.md
+
+# editor
+.vscode/
