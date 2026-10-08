@@ -1,0 +1,468 @@
+---
+const presets = [
+  { id: "tuned", label: "Well tuned", kp: 8, ki: 0, kd: 4, path: "circle" },
+  { id: "ponly", label: "P only", kp: 6, ki: 0, kd: 0, path: "zigzag" },
+  { id: "low", label: "Low gains", kp: 1, ki: 0, kd: 1, path: "circle" },
+  { id: "windup", label: "Integral windup", kp: 8, ki: 5, kd: 4, path: "zigzag" },
+];
+const paths = [
+  { id: "circle", label: "Circle" },
+  { id: "eight", label: "Figure-8" },
+  { id: "zigzag", label: "Zig-zag" },
+  { id: "cursor", label: "Your cursor" },
+];
+---
+
+<section class="section" id="playground">
+  <div class="wrap">
+    <p class="label">// Playground</p>
+    <h2>Tune the follower yourself</h2>
+    <p class="intro">
+      This is the control problem from my RC car follower, seen from above. The drone knows where the car is
+      and has to stay 0.6 m behind it with limited thrust. Change the PID gains and watch it lock on,
+      overshoot, or fall behind.
+    </p>
+
+    <div class="pg" data-playground>
+      <div class="stage">
+        <canvas aria-label="Simulation: a drone, drawn as a quadrotor, chases a car moving along the selected path. A green box tracks the car and a dashed line shows the distance between them."></canvas>
+        <button class="play" type="button" aria-label="Pause simulation">❚❚</button>
+      </div>
+
+      <div class="panel">
+        <fieldset class="presets">
+          <legend>Presets</legend>
+          {presets.map((p, i) => (
+            <button type="button" class:list={["chip", { on: i === 0 }]} data-preset={p.id}
+              data-kp={p.kp} data-ki={p.ki} data-kd={p.kd} data-for-path={p.path}>{p.label}</button>
+          ))}
+        </fieldset>
+
+        <div class="sliders">
+          <label>
+            <span>K<sub>p</sub> <em>proportional</em></span>
+            <output data-for="kp">8.0</output>
+            <input type="range" name="kp" min="0" max="12" step="0.1" value="8" />
+          </label>
+          <label>
+            <span>K<sub>i</sub> <em>integral</em></span>
+            <output data-for="ki">0.0</output>
+            <input type="range" name="ki" min="0" max="6" step="0.1" value="0" />
+          </label>
+          <label>
+            <span>K<sub>d</sub> <em>derivative</em></span>
+            <output data-for="kd">4.0</output>
+            <input type="range" name="kd" min="0" max="8" step="0.1" value="4" />
+          </label>
+          <label>
+            <span>Car speed</span>
+            <output data-for="speed">1.2 m/s</output>
+            <input type="range" name="speed" min="0.4" max="2.4" step="0.1" value="1.2" />
+          </label>
+        </div>
+
+        <fieldset class="paths">
+          <legend>Car path</legend>
+          {paths.map((p, i) => (
+            <button type="button" class:list={["chip", { on: i === 0 }]} data-path={p.id}>{p.label}</button>
+          ))}
+        </fieldset>
+
+        <dl class="stats">
+          <div><dt>RMS error</dt><dd data-stat="rms">0.00 m</dd></div>
+          <div><dt>Peak error</dt><dd data-stat="peak">0.00 m</dd></div>
+          <div><dt>At thrust limit</dt><dd data-stat="sat">0%</dd></div>
+        </dl>
+        <canvas class="spark" aria-label="Distance error over the last 10 seconds"></canvas>
+        <p class="spark-label">Distance error over the last 10 s · red = thrust limit</p>
+      </div>
+    </div>
+
+    <p class="note">
+      Simplified 2D model: a point-mass drone with drag and a 4 m/s² thrust limit, not the Tello's real dynamics.
+      Each preset picks the path that shows its problem best. <strong>P only</strong> rings at every corner of the
+      zig-zag, <strong>Low gains</strong> trails far behind on the circle, and <strong>Integral windup</strong> is the
+      tuned controller plus a big K<sub>i</sub>: it overshoots the corners while the thrust limit holds the integral high.
+    </p>
+  </div>
+</section>
+
+<style>
+  .intro { color: var(--muted); max-width: 46em; margin: -18px 0 32px; }
+
+  .pg {
+    display: grid; grid-template-columns: 1.55fr 1fr; gap: 0;
+    border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface);
+  }
+  @media (max-width: 900px) { .pg { grid-template-columns: 1fr; } }
+
+  .stage { position: relative; background: #070a09; min-height: clamp(320px, 70vw, 480px); }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  .play {
+    position: absolute; right: 12px; bottom: 12px;
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+    font: 500 12px var(--mono); cursor: pointer;
+  }
+  .play:hover { border-color: var(--accent); }
+
+  .panel { padding: 20px; border-left: 1px solid var(--line); display: grid; gap: 18px; align-content: start; }
+  @media (max-width: 900px) { .panel { border-left: 0; border-top: 1px solid var(--line); } }
+
+  fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  legend { font: 500 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; padding: 0; }
+  .chip {
+    font: 400 13px var(--mono); color: var(--muted); background: transparent;
+    border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; cursor: pointer;
+  }
+  .chip:hover { color: var(--text); border-color: var(--muted); }
+  .chip.on { color: #04140b; background: var(--accent); border-color: var(--accent); }
+
+  .sliders { display: grid; gap: 12px; }
+  .sliders label { display: grid; grid-template-columns: 1fr auto; row-gap: 4px; font-size: 14.5px; }
+  .sliders em { font-style: normal; color: var(--muted); font-size: 12.5px; margin-left: 6px; }
+  .sliders output { font: 500 13.5px var(--mono); color: var(--amber); }
+  .sliders input { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0; }
+  .stats div { background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; }
+  .stats dt { font-size: 11.5px; color: var(--muted); line-height: 1.3; }
+  .stats dd { margin: 4px 0 0; font: 500 16px var(--mono); color: var(--text); }
+
+  .spark { width: 100%; height: 56px; display: block; }
+  .spark-label { margin: -12px 0 0; font: 400 11.5px var(--mono); color: var(--muted); }
+
+  .note { color: var(--muted); font-size: 14.5px; margin: 16px 0 0; max-width: 52em; }
+  .note strong { color: var(--text); font-weight: 500; }
+</style>
+
+<script>
+  type Vec = { x: number; y: number };
+
+  const STANDOFF = 0.6;   // m behind the car
+  const A_MAX = 4;        // thrust limit, m/s^2
+  const DRAG = 0.5;       // linear drag, 1/s
+  const I_MAX = 2;        // integral clamp, m·s
+  const WORLD = 3.3;      // half-extent of the view along its shorter side, m
+  const DT = 1 / 120;
+  const HISTORY = 10;     // seconds of telemetry
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-playground]")) {
+    const canvas = root.querySelector<HTMLCanvasElement>(".stage canvas")!;
+    const ctx = canvas.getContext("2d")!;
+    const spark = root.querySelector<HTMLCanvasElement>("canvas.spark")!;
+    const sctx = spark.getContext("2d")!;
+    const playBtn = root.querySelector<HTMLButtonElement>(".play")!;
+    const css = getComputedStyle(document.documentElement);
+    const col = (v: string) => css.getPropertyValue(v).trim();
+    const C = {
+      accent: col("--accent"), chart: col("--chart"), amber: col("--amber"),
+      text: col("--text"), muted: col("--muted"), line: col("--line"), bg: "#070a09",
+    };
+    const mono = css.getPropertyValue("--mono").trim();
+
+    const gains = { kp: 8, ki: 0, kd: 4, speed: 1.2 };
+    let path = "circle";
+    let running = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let visible = false;
+
+    // ---- state
+    let t = 0, phase = 0;
+    let car: Vec = { x: 0, y: 0 }, carPrev: Vec = { x: 0, y: 0 }, carHeading = 0;
+    let drone: Vec = { x: -2, y: -1.5 }, vel: Vec = { x: 0, y: 0 };
+    let integ: Vec = { x: 0, y: 0 }, prevErr: Vec | null = null;
+    let cursor: Vec = { x: 1, y: 0.5 };
+    let trail: Vec[] = [];
+    let hist: { t: number; err: number; sat: boolean }[] = [];
+    let saturated = false;
+
+    const reset = () => {
+      measurePath();
+      phase = 0; t = 0;
+      car = carAt(0); carPrev = { ...car };
+      drone = { x: car.x - 1.6, y: car.y - 1.2 }; vel = { x: 0, y: 0 };
+      integ = { x: 0, y: 0 }; prevErr = null; trail = []; hist = [];
+    };
+
+    // ---- target paths (phase advances so linear speed ≈ gains.speed)
+    function carAt(p: number): Vec {
+      const R = 2.1;
+      switch (path) {
+        case "eight": return { x: R * 1.25 * Math.sin(p), y: R * 0.7 * Math.sin(2 * p) };
+        case "zigzag": {
+          // sweep left-right and back, with sharp turns in y
+          const s = ((p / (2 * Math.PI)) % 1 + 1) % 1;
+          const sweep = s < 0.5 ? 2 * s : 2 - 2 * s;
+          const tri = (u: number) => 1 - 4 * Math.abs((((u + 0.25) % 1) + 1) % 1 - 0.5);
+          return { x: -2.6 + 5.2 * sweep, y: 1.3 * tri(6 * s) };
+        }
+        case "cursor": return { ...cursor };
+        default: return { x: R * Math.cos(p), y: R * Math.sin(p) };
+      }
+    }
+    let pathLen = 1;
+    const measurePath = () => {
+      if (path === "cursor") { pathLen = 1; return; }
+      let len = 0, prev = carAt(0);
+      for (let i = 1; i <= 600; i++) {
+        const q = carAt((i / 600) * 2 * Math.PI);
+        len += Math.hypot(q.x - prev.x, q.y - prev.y); prev = q;
+      }
+      pathLen = len;
+    };
+
+    function step(dt: number) {
+      t += dt;
+      carPrev = car;
+      if (path === "cursor") {
+        // chase the pointer at most at the chosen speed
+        const dx = cursor.x - car.x, dy = cursor.y - car.y, d = Math.hypot(dx, dy);
+        const s = Math.min(d, gains.speed * dt);
+        car = d > 1e-6 ? { x: car.x + (dx / d) * s, y: car.y + (dy / d) * s } : car;
+      } else {
+        phase += (gains.speed * dt * 2 * Math.PI) / pathLen;
+        car = carAt(phase);
+      }
+      const mv = Math.hypot(car.x - carPrev.x, car.y - carPrev.y);
+      if (mv > 1e-5) carHeading = Math.atan2(car.y - carPrev.y, car.x - carPrev.x);
+
+      // setpoint: STANDOFF behind the car, along the line from drone to car
+      const dx = car.x - drone.x, dy = car.y - drone.y;
+      const dist = Math.hypot(dx, dy) || 1e-6;
+      const err: Vec = { x: dx - (dx / dist) * STANDOFF, y: dy - (dy / dist) * STANDOFF };
+
+      integ.x = Math.max(-I_MAX, Math.min(I_MAX, integ.x + err.x * dt));
+      integ.y = Math.max(-I_MAX, Math.min(I_MAX, integ.y + err.y * dt));
+      const dErr = prevErr ? { x: (err.x - prevErr.x) / dt, y: (err.y - prevErr.y) / dt } : { x: 0, y: 0 };
+      prevErr = err;
+
+      let ax = gains.kp * err.x + gains.ki * integ.x + gains.kd * dErr.x;
+      let ay = gains.kp * err.y + gains.ki * integ.y + gains.kd * dErr.y;
+      const a = Math.hypot(ax, ay);
+      saturated = a > A_MAX;
+      if (saturated) { ax *= A_MAX / a; ay *= A_MAX / a; }
+
+      vel.x += (ax - DRAG * vel.x) * dt;
+      vel.y += (ay - DRAG * vel.y) * dt;
+      drone.x += vel.x * dt;
+      drone.y += vel.y * dt;
+      // keep it in view if gains are wild
+      drone.x = Math.max(-8, Math.min(8, drone.x));
+      drone.y = Math.max(-6, Math.min(6, drone.y));
+
+      const errMag = Math.abs(dist - STANDOFF);
+      hist.push({ t, err: errMag, sat: saturated });
+      while (hist.length && hist[0].t < t - HISTORY) hist.shift();
+    }
+
+    // ---- drawing
+    let W = 0, H = 0, scale = 1, dpr = 1;
+    const toPx = (p: Vec) => ({ x: W / 2 + p.x * scale, y: H / 2 - p.y * scale });
+    const toWorld = (px: number, py: number): Vec => ({ x: (px - W / 2) / scale, y: -(py - H / 2) / scale });
+
+    function resize() {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      const r = canvas.parentElement!.getBoundingClientRect();
+      W = r.width; H = r.height;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      scale = Math.min(W, H) / (2 * WORLD);
+      const sr = spark.getBoundingClientRect();
+      spark.width = sr.width * dpr; spark.height = sr.height * dpr;
+      sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function drawGrid() {
+      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+      const step = scale; // 1 m grid
+      for (let x = (W / 2) % step; x < W; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = (H / 2) % step; y < H; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    }
+
+    function drawPathGuide() {
+      if (path === "cursor") return;
+      ctx.strokeStyle = C.line; ctx.lineWidth = 1.5; ctx.setLineDash([3, 5]);
+      ctx.beginPath();
+      for (let i = 0; i <= 240; i++) {
+        const p = toPx(carAt((i / 240) * 2 * Math.PI));
+        i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y);
+      }
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    function drawCar() {
+      const p = toPx(car);
+      const L = 0.34 * scale, Wd = 0.2 * scale;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(-carHeading);
+      ctx.fillStyle = "#3a6df0"; ctx.strokeStyle = "#9db4ff"; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(-L / 2, -Wd / 2, L, Wd, 3); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#111";
+      for (const [wx, wy] of [[-L / 3, -Wd / 2], [L / 3, -Wd / 2], [-L / 3, Wd / 2], [L / 3, Wd / 2]]) {
+        ctx.fillRect(wx - 4, wy - 2.5, 8, 5);
+      }
+      ctx.restore();
+
+      // tracker box with corner brackets, like the onboard overlay
+      const b = 0.36 * scale;
+      ctx.strokeStyle = C.accent; ctx.lineWidth = 2;
+      ctx.strokeRect(p.x - b, p.y - b, 2 * b, 2 * b);
+      ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.font = `500 11px ${mono}`; ctx.fillText("rc_car", p.x - b, p.y - b - 5);
+    }
+
+    function drawDrone() {
+      // trail
+      ctx.strokeStyle = C.amber; ctx.lineWidth = 1.5;
+      for (let i = 1; i < trail.length; i++) {
+        ctx.globalAlpha = (i / trail.length) * 0.5;
+        const a = toPx(trail[i - 1]), b = toPx(trail[i]);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      const p = toPx(drone), c = toPx(car);
+      // distance line
+      ctx.strokeStyle = C.muted; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]);
+
+      // quadrotor
+      const arm = 0.17 * scale, rotor = 0.075 * scale;
+      ctx.strokeStyle = saturated ? "#ff6b5b" : C.text; ctx.lineWidth = 2;
+      for (const ang of [Math.PI / 4, (3 * Math.PI) / 4]) {
+        ctx.beginPath();
+        ctx.moveTo(p.x - Math.cos(ang) * arm, p.y - Math.sin(ang) * arm);
+        ctx.lineTo(p.x + Math.cos(ang) * arm, p.y + Math.sin(ang) * arm);
+        ctx.stroke();
+      }
+      ctx.lineWidth = 1.5;
+      for (const ang of [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4]) {
+        ctx.beginPath(); ctx.arc(p.x + Math.cos(ang) * arm, p.y + Math.sin(ang) * arm, rotor, 0, Math.PI * 2); ctx.stroke();
+      }
+    }
+
+    function drawHud() {
+      const d = Math.hypot(car.x - drone.x, car.y - drone.y);
+      ctx.font = `500 12.5px ${mono}`;
+      ctx.fillStyle = C.accent; ctx.fillText(`dist ${d.toFixed(2)} m`, 12, 22);
+      ctx.fillStyle = C.amber; ctx.fillText(`target ${STANDOFF.toFixed(1)} m`, 12, 40);
+      ctx.fillStyle = saturated ? "#ff6b5b" : C.muted;
+      ctx.fillText(saturated ? "THRUST LIMIT" : "thrust ok", 12, 58);
+      if (path === "cursor") {
+        ctx.fillStyle = C.muted; ctx.fillText("move your pointer over the field", 12, H - 14);
+      }
+    }
+
+    function drawSpark() {
+      const w = spark.width / dpr, h = spark.height / dpr;
+      sctx.clearRect(0, 0, w, h);
+      sctx.strokeStyle = C.line; sctx.lineWidth = 1;
+      sctx.beginPath(); sctx.moveTo(0, h - 0.5); sctx.lineTo(w, h - 0.5); sctx.stroke();
+      if (hist.length < 2) return;
+      const yMax = Math.max(1, ...hist.map((s) => s.err));
+      const x = (tt: number) => ((tt - (t - HISTORY)) / HISTORY) * w;
+      const y = (e: number) => h - 2 - (e / yMax) * (h - 6);
+      // saturation bands
+      sctx.fillStyle = "rgba(255,107,91,0.14)";
+      for (const s of hist) if (s.sat) sctx.fillRect(x(s.t), 0, Math.max(1, w / (HISTORY * 120)) + 0.6, h);
+      sctx.strokeStyle = C.chart; sctx.lineWidth = 2; sctx.lineJoin = "round";
+      sctx.beginPath();
+      hist.forEach((s, i) => (i ? sctx.lineTo(x(s.t), y(s.err)) : sctx.moveTo(x(s.t), y(s.err))));
+      sctx.stroke();
+    }
+
+    const stat = (k: string) => root.querySelector<HTMLElement>(`[data-stat="${k}"]`)!;
+    let lastStats = 0;
+    function updateStats() {
+      if (!hist.length || t - lastStats < 0.25) return;
+      lastStats = t;
+      const rms = Math.sqrt(hist.reduce((a, s) => a + s.err * s.err, 0) / hist.length);
+      const peak = Math.max(...hist.map((s) => s.err));
+      const sat = hist.filter((s) => s.sat).length / hist.length;
+      stat("rms").textContent = `${rms.toFixed(2)} m`;
+      stat("peak").textContent = `${peak.toFixed(2)} m`;
+      stat("sat").textContent = `${Math.round(sat * 100)}%`;
+    }
+
+    function render() {
+      drawGrid(); drawPathGuide(); drawCar(); drawDrone(); drawHud(); drawSpark();
+    }
+
+    // ---- loop
+    let last = 0, acc = 0, trailClock = 0;
+    function frame(now: number) {
+      if (!running || !visible) { last = 0; return; }
+      const elapsed = last ? Math.min(0.1, (now - last) / 1000) : 0;
+      last = now; acc += elapsed;
+      while (acc >= DT) {
+        step(DT); acc -= DT; trailClock += DT;
+        if (trailClock > 0.05) { trail.push({ ...drone }); if (trail.length > 70) trail.shift(); trailClock = 0; }
+      }
+      render(); updateStats();
+      requestAnimationFrame(frame);
+    }
+    const start = () => { if (running && visible) requestAnimationFrame(frame); };
+
+    // ---- controls
+    const setPlaying = (on: boolean) => {
+      running = on;
+      playBtn.textContent = on ? "❚❚" : "▶";
+      playBtn.setAttribute("aria-label", on ? "Pause simulation" : "Play simulation");
+      start();
+    };
+    playBtn.addEventListener("click", () => setPlaying(!running));
+
+    const outputs = (name: string, v: number) => {
+      const o = root.querySelector<HTMLOutputElement>(`output[data-for="${name}"]`)!;
+      o.textContent = name === "speed" ? `${v.toFixed(1)} m/s` : v.toFixed(1);
+    };
+    const sliders = root.querySelectorAll<HTMLInputElement>(".sliders input");
+    const setChip = (sel: string, el: Element | null) => {
+      root.querySelectorAll(sel).forEach((c) => c.classList.toggle("on", c === el));
+    };
+    sliders.forEach((s) => s.addEventListener("input", () => {
+      (gains as any)[s.name] = parseFloat(s.value);
+      outputs(s.name, parseFloat(s.value));
+      if (s.name !== "speed") setChip("[data-preset]", null);
+    }));
+
+    root.querySelectorAll<HTMLButtonElement>("[data-preset]").forEach((b) => b.addEventListener("click", () => {
+      for (const k of ["kp", "ki", "kd"] as const) {
+        const v = parseFloat(b.dataset[k]!);
+        gains[k] = v;
+        const s = root.querySelector<HTMLInputElement>(`input[name="${k}"]`)!;
+        s.value = String(v); outputs(k, v);
+      }
+      setChip("[data-preset]", b);
+      path = b.dataset.forPath!;
+      setChip("[data-path]", root.querySelector(`[data-path="${path}"]`));
+      reset(); if (!running) render();
+    }));
+
+    root.querySelectorAll<HTMLButtonElement>("[data-path]").forEach((b) => b.addEventListener("click", () => {
+      path = b.dataset.path!;
+      setChip("[data-path]", b);
+      reset(); if (!running) render();
+    }));
+
+    const moveCursor = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect();
+      cursor = toWorld(e.clientX - r.left, e.clientY - r.top);
+    };
+    canvas.addEventListener("pointermove", moveCursor);
+    canvas.addEventListener("pointerdown", moveCursor);
+
+    new IntersectionObserver((entries) => {
+      visible = entries[0].isIntersecting;
+      start();
+    }, { threshold: 0.15 }).observe(root);
+
+    new ResizeObserver(() => { resize(); render(); }).observe(canvas.parentElement!);
+
+    resize(); reset();
+    // start mid-chase, so the first frame (and the static frame for reduced motion) shows real behavior
+    for (let i = 0; i < 4 / DT; i++) step(DT);
+    render(); updateStats();
+    if (!running) setPlaying(false);
+  }
+</script>

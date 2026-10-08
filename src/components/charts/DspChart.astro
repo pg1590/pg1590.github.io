@@ -1,0 +1,71 @@
+---
+// DSP slices used by representative GEMM designs (Vitis HLS synthesis, Alveo U50 has 5,952).
+const designs = [
+  { name: "Naive triple loop", dsp: 7 },
+  { name: "16×16 tiled, FP32", dsp: 88 },
+  { name: "Dataflow, INT8", dsp: 168 },
+  { name: "Systolic + double buffer", dsp: 406 },
+  { name: "32×32 systolic, FP32", dsp: 864 },
+  { name: "32×32 fully unrolled", dsp: 1044 },
+];
+
+const W = 520, H = 320;
+const m = { top: 16, right: 58, bottom: 34, left: 214 };
+const iw = W - m.left - m.right;
+const max = 1100;
+const band = (H - m.top - m.bottom) / designs.length;
+const bh = 24;
+const r = 4;
+
+// bar anchored at the baseline (square left), 4px rounded data end (right)
+const bar = (x0: number, y0: number, w: number) => {
+  const rr = Math.min(r, w / 2);
+  return `M${x0},${y0}H${x0 + w - rr}A${rr},${rr} 0 0 1 ${x0 + w},${y0 + rr}V${y0 + bh - rr}A${rr},${rr} 0 0 1 ${x0 + w - rr},${y0 + bh}H${x0}Z`;
+};
+const xTicks = [0, 500, 1000];
+---
+
+<figure class="chart">
+  <svg viewBox={`0 0 ${W} ${H}`} role="img"
+    aria-label="Bar chart of DSP slices used per GEMM design: naive 7, 16 by 16 tiled 88, INT8 dataflow 168, systolic with double buffering 406, 32 by 32 systolic FP32 864, 32 by 32 fully unrolled 1,044.">
+    {xTicks.map((v) => {
+      const x = m.left + (v / max) * iw;
+      return (
+        <g>
+          <line x1={x} x2={x} y1={m.top - 6} y2={H - m.bottom} class="grid" />
+          <text x={x} y={H - m.bottom + 24} class="tick" text-anchor="middle">{v.toLocaleString("en-US")}</text>
+        </g>
+      );
+    })}
+    {designs.map((d, i) => {
+      const y0 = m.top + i * band + (band - bh) / 2;
+      const w = Math.max(2, (d.dsp / max) * iw);
+      return (
+        <g class="row" tabindex="0">
+          <title>{`${d.name}: ${d.dsp.toLocaleString("en-US")} DSP slices`}</title>
+          <rect x="0" y={y0 - (band - bh) / 2} width={W} height={band} class="hit" />
+          <text x={m.left - 12} y={y0 + bh / 2 + 6} class="name" text-anchor="end">{d.name}</text>
+          <path d={bar(m.left, y0, w)} class="bar" />
+          <text x={m.left + w + 8} y={y0 + bh / 2 + 5} class="value">{d.dsp.toLocaleString("en-US")}</text>
+        </g>
+      );
+    })}
+  </svg>
+  <figcaption>DSP slices per design from HLS synthesis (the U50 has 5,952).</figcaption>
+</figure>
+
+<style>
+  .chart { margin: 0; background: var(--surface); padding: 14px 14px 10px; }
+  svg { width: 100%; height: auto; display: block; }
+  .grid { stroke: var(--line); stroke-width: 1; }
+  .tick { fill: var(--muted); font: 400 15px var(--mono); }
+  .name { fill: var(--muted); font: 400 16.5px var(--sans); }
+  .value { fill: var(--text); font: 500 15.5px var(--mono); }
+  .bar { fill: var(--chart); transition: opacity .12s; }
+  .hit { fill: transparent; }
+  .row:hover .name, .row:focus .name { fill: var(--text); }
+  svg:has(.row:hover) .row:not(:hover) .bar { opacity: .45; }
+  .row:focus { outline: none; }
+  .row:focus-visible .bar { stroke: var(--text); stroke-width: 1.5; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 4px; }
+</style>

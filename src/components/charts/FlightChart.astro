@@ -1,0 +1,97 @@
+---
+// Estimated distance to the RC car over a logged circular run, against the 1 m standoff target.
+import data from "../../data/flight-circle.json";
+
+const W = 520, H = 320;
+const m = { top: 26, right: 14, bottom: 40, left: 54 };
+const iw = W - m.left - m.right, ih = H - m.top - m.bottom;
+const tMax = 50, yMax = 3.5;
+const x = (t: number) => m.left + (t / tMax) * iw;
+const y = (d: number) => m.top + ih - (d / yMax) * ih;
+
+const pts = data.points as [number, number][];
+const path = pts.map(([t, d], i) => `${i ? "L" : "M"}${x(t).toFixed(1)},${y(d).toFixed(1)}`).join("");
+const yTicks = [0, 1, 2, 3];
+const xTicks = [0, 10, 20, 30, 40, 50];
+---
+
+<figure class="chart" data-flight data-points={JSON.stringify(pts)}>
+  <svg viewBox={`0 0 ${W} ${H}`} role="img"
+    aria-label="Line chart: estimated distance to the RC car over a 49-second circular run. It ranges from 1.5 to 3.1 metres, above the 1 metre target throughout.">
+    {yTicks.map((v) => (
+      <g>
+        <line x1={m.left} x2={W - m.right} y1={y(v)} y2={y(v)} class="grid" />
+        <text x={m.left - 10} y={y(v) + 5} class="tick" text-anchor="end">{v} m</text>
+      </g>
+    ))}
+    {xTicks.map((v) => (
+      <text x={x(v)} y={H - m.bottom + 26} class="tick" text-anchor="middle">{v}s</text>
+    ))}
+
+    <line x1={m.left} x2={W - m.right} y1={y(data.target)} y2={y(data.target)} class="target" />
+    <text x={W - m.right} y={y(data.target) - 8} class="target-label" text-anchor="end">1.0 m target</text>
+
+    <path d={path} class="series" />
+
+    <g class="cursor" visibility="hidden">
+      <line class="cursor-line" y1={m.top} y2={m.top + ih} />
+      <circle class="cursor-dot" r="6" />
+    </g>
+    <rect class="hit" x={m.left} y={m.top} width={iw} height={ih} />
+  </svg>
+  <div class="readout" aria-live="polite"></div>
+  <figcaption>Estimated distance to the car, from the flight log of a circular run.</figcaption>
+</figure>
+
+<style>
+  .chart { margin: 0; position: relative; background: var(--surface); padding: 14px 14px 10px; }
+  svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .grid { stroke: var(--line); stroke-width: 1; }
+  .tick { fill: var(--muted); font: 400 16px var(--mono); }
+  .target { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 5; }
+  .target-label { fill: var(--muted); font: 500 16px var(--mono); }
+  .series { fill: none; stroke: var(--chart); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .cursor-line { stroke: var(--muted); stroke-width: 1; }
+  .cursor-dot { fill: var(--chart); stroke: var(--surface); stroke-width: 2; }
+  .hit { fill: transparent; cursor: crosshair; }
+  .readout {
+    position: absolute; top: 12px; left: 64px; pointer-events: none;
+    font: 500 12.5px var(--mono); color: var(--text);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px;
+    opacity: 0; transition: opacity .12s;
+  }
+  .readout.on { opacity: 1; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 4px; }
+</style>
+
+<script>
+  for (const fig of document.querySelectorAll<HTMLElement>("[data-flight]")) {
+    const pts: [number, number][] = JSON.parse(fig.dataset.points!);
+    const svg = fig.querySelector("svg")!;
+    const hit = fig.querySelector<SVGRectElement>(".hit")!;
+    const cursor = fig.querySelector<SVGGElement>(".cursor")!;
+    const line = fig.querySelector<SVGLineElement>(".cursor-line")!;
+    const dot = fig.querySelector<SVGCircleElement>(".cursor-dot")!;
+    const readout = fig.querySelector<HTMLElement>(".readout")!;
+    const x0 = hit.x.baseVal.value, iw = hit.width.baseVal.value;
+    const y0 = hit.y.baseVal.value, ih = hit.height.baseVal.value;
+
+    const show = (e: PointerEvent) => {
+      const p = svg.createSVGPoint();
+      p.x = e.clientX; p.y = e.clientY;
+      const sp = p.matrixTransform(svg.getScreenCTM()!.inverse());
+      const t = Math.max(0, Math.min(50, ((sp.x - x0) / iw) * 50));
+      const [pt, pd] = pts.reduce((a, b) => (Math.abs(b[0] - t) < Math.abs(a[0] - t) ? b : a));
+      const cx = x0 + (pt / 50) * iw, cy = y0 + ih - (pd / 3.5) * ih;
+      line.setAttribute("x1", String(cx)); line.setAttribute("x2", String(cx));
+      dot.setAttribute("cx", String(cx)); dot.setAttribute("cy", String(cy));
+      cursor.setAttribute("visibility", "visible");
+      readout.textContent = `t ${pt.toFixed(1)} s · ${pd.toFixed(2)} m`;
+      readout.classList.add("on");
+    };
+    const hide = () => { cursor.setAttribute("visibility", "hidden"); readout.classList.remove("on"); };
+    hit.addEventListener("pointermove", show);
+    hit.addEventListener("pointerdown", show);
+    hit.addEventListener("pointerleave", hide);
+  }
+</script>

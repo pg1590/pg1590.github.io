@@ -1,0 +1,106 @@
+---
+import FlightChart from "./charts/FlightChart.astro";
+import DspChart from "./charts/DspChart.astro";
+
+const gh = "https://github.com/pg1590/";
+---
+
+<section class="section" id="work">
+  <div class="wrap">
+    <p class="label">// Selected work</p>
+    <h2>Things I've built</h2>
+
+    <div class="projects">
+      <article class="project">
+        <div class="media"><FlightChart /></div>
+        <div class="body">
+          <p class="kind">Robotics · Real flight</p>
+          <h3>RC Car Follower Drone</h3>
+          <p class="summary">A DJI Tello that finds a moving RC car with a custom-trained YOLOv8 model and follows it from 1 m away, using only its onboard camera.</p>
+          <ul>
+            <li>YOLOv8s runs on every 4th frame; a CSRT tracker covers the frames between detections so control isn't limited by detector speed.</li>
+            <li>A Kalman filter smooths the target, and three PID loops drive yaw, altitude, and range.</li>
+            <li>Flight logs showed yaw at its limit in a third of control steps on turns, which pinpoints what to tune next.</li>
+          </ul>
+          <p class="stack">Python · YOLOv8 · OpenCV · Kalman filter · PID</p>
+          <a class="link" href={gh + "UAV-Project"}>View on GitHub →</a>
+        </div>
+      </article>
+
+      <article class="project">
+        <div class="media">
+          <video src="/media/swarm.mp4" poster="/media/swarm.jpg" autoplay muted loop playsinline
+            aria-label="Simulated quadrotor swarm in PyBullet moving between line, V, and spread formations"></video>
+        </div>
+        <div class="body">
+          <p class="kind">Research · Multi-agent RL</p>
+          <h3>Drone Swarm Coordination</h3>
+          <p class="summary">Decentralized multi-UAV pursuit of moving targets, built at the Robotics Research Center, IIIT Hyderabad.</p>
+          <ul>
+            <li>MADDPG with centralized training and decentralized execution: agents act on local observations only.</li>
+            <li>Reward shaping for target pursuit, collision avoidance, swarm cohesion, and formation stability.</li>
+            <li>Line, V, and square formations with PD control; now moving to recurrent MAPPO.</li>
+          </ul>
+          <p class="stack">Python · PyBullet · MADDPG · MAPPO</p>
+          <a class="link" href={gh + "Swarm-Drones-Detection-Tracking-Path-Prediction-and-Navigation"}>View on GitHub →</a>
+        </div>
+      </article>
+
+      <article class="project">
+        <div class="media">
+          <img src="/media/sitebuilder.jpg" alt="AI Site Builder landing page: a prompt box under the heading 'Turn thoughts into websites instantly, with AI'" loading="lazy" width="960" height="540" />
+        </div>
+        <div class="body">
+          <p class="kind">Full-stack · SaaS</p>
+          <h3>AI Site Builder</h3>
+          <p class="summary">Describe a website in plain English and get a working one back, then keep refining it in conversation.</p>
+          <ul>
+            <li>LLM generation with conversational revisions, version history, and one-click rollback.</li>
+            <li>Stripe Checkout and webhooks for credit-based billing; session auth and protected REST APIs.</li>
+            <li>Community gallery, live preview, and HTML export; deployed on Vercel.</li>
+          </ul>
+          <p class="stack">React · TypeScript · Express · Prisma · PostgreSQL · Stripe</p>
+          <a class="link" href={gh + "AI-Website-Builder"}>View on GitHub →</a>
+        </div>
+      </article>
+
+      <article class="project">
+        <div class="media"><DspChart /></div>
+        <div class="body">
+          <p class="kind">Hardware acceleration · C++</p>
+          <h3>Systolic GEMM Accelerators</h3>
+          <p class="summary">Ten matrix-multiply kernels on an AMD Alveo U50 FPGA, from a naive loop to a systolic array doing 1,024 multiply-accumulates per cycle.</p>
+          <ul>
+            <li>32×32 systolic array with 2D shift-register operand meshes at II=1, fed by 512-bit AXI ports.</li>
+            <li>Dataflow streaming with ping-pong buffers cut DSP use 2.5× (1,044 → 406) while hiding load latency.</li>
+            <li>Diagnosed routing congestion on a 48×48 array and re-architected it to close timing.</li>
+          </ul>
+          <p class="stack">C++ · Vitis HLS · XRT · HBM · INT8</p>
+          <a class="link" href={gh + "HLS-GEMM-Accelerators-on-AMD-Xilinx-FPGA"}>View on GitHub →</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .projects { display: grid; gap: clamp(56px, 8vw, 88px); }
+  .project { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(28px, 4vw, 52px); align-items: center; }
+  .project:nth-child(even) .media { order: 2; }
+  @media (max-width: 860px) {
+    .project { grid-template-columns: 1fr; }
+    .project:nth-child(even) .media { order: 0; }
+  }
+
+  .media { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+  .media video, .media img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+
+  .kind { font: 500 12.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--amber); margin: 0 0 10px; }
+  h3 { font-size: clamp(22px, 2.6vw, 27px); }
+  .summary { color: var(--text); margin: 12px 0 14px; }
+  ul { margin: 0 0 16px; padding-left: 18px; color: var(--muted); display: grid; gap: 6px; font-size: 15.5px; }
+  ul li::marker { color: color-mix(in srgb, var(--accent) 55%, transparent); }
+  .stack { font: 400 13px var(--mono); color: var(--muted); margin: 0 0 14px; }
+  .link { font: 500 14px var(--mono); color: var(--accent); text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+</style>

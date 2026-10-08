@@ -1,0 +1,83 @@
+---
+import "../styles/global.css";
+
+interface Props { title?: string; description?: string }
+const {
+  title = "Prakhar Gupta: Software & Robotics",
+  description = "Prakhar Gupta builds perception and control software for drones, plus the ML and full-stack systems around it. IIIT Hyderabad.",
+} = Astro.props;
+const ogImage = new URL("/media/rccar.jpg", Astro.site).href;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+const links = [
+  { href: "/#work", label: "Work" },
+  { href: "/#experience", label: "Experience" },
+  { href: "/#playground", label: "Playground" },
+  { href: "/#about", label: "About" },
+  { href: "/#contact", label: "Contact" },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav-inner">
+        <a href="/" class="logo">pg<span>1590</span></a>
+        <nav aria-label="Main">
+          {links.map((l) => <a href={l.href}>{l.label}</a>)}
+          <a href="/Prakhar_Gupta_Resume.pdf" class="btn">Resume</a>
+        </nav>
+      </div>
+    </header>
+
+    <main><slot /></main>
+
+    <footer class="footer">
+      <div class="wrap footer-inner">
+        <span>© {new Date().getFullYear()} Prakhar Gupta</span>
+        <span class="footer-links">
+          <a href="https://github.com/pg1590">GitHub</a>
+          <a href="https://www.linkedin.com/in/prakhar-gupta-199744271/">LinkedIn</a>
+          <a href="mailto:prakhargupta058@gmail.com">Email</a>
+          <a href="/Prakhar_Gupta_Resume.pdf">Resume</a>
+        </span>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .nav {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .logo { font: 500 16px var(--mono); text-decoration: none; }
+  .logo span { color: var(--accent); }
+  nav { display: flex; align-items: center; gap: 24px; font-size: 15px; }
+  nav a:not(.btn) { color: var(--muted); text-decoration: none; }
+  nav a:not(.btn):hover { color: var(--text); }
+  nav .btn { padding: 7px 12px; }
+  @media (max-width: 640px) { nav a:not(.btn) { display: none; } }
+
+  .footer { border-top: 1px solid var(--line); padding: 28px 0; color: var(--muted); font: 400 13.5px var(--mono); }
+  .footer-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .footer-links { display: flex; gap: 20px; }
+  .footer a { text-decoration: none; }
+  .footer a:hover { color: var(--accent); }
+</style>

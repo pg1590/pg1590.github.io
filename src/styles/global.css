@@ -1,0 +1,72 @@
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+:root {
+  --bg: #0a0d0c;
+  --surface: #111614;
+  --surface-2: #161d1a;
+  --line: #222c28;
+  --text: #e4ebe7;
+  --muted: #8d9c96;
+  --accent: #3ddc84;       /* tracker-box green */
+  --accent-dim: #3ddc8422;
+  --amber: #f2b544;        /* telemetry readout */
+  --chart: #29a862;        /* data marks; validated for the dark chart surface */
+
+  --sans: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --max: 1120px;
+  --gutter: clamp(16px, 4vw, 32px);
+  --radius: 6px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 17px/1.65 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+img, video { display: block; max-width: 100%; }
+
+h1, h2, h3 { line-height: 1.15; margin: 0; font-weight: 600; letter-spacing: -0.01em; }
+
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+
+/* mono label, e.g. "// EXPERIENCE" */
+.label {
+  font: 500 12.5px/1 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.section { padding: clamp(64px, 10vw, 112px) 0; border-top: 1px solid var(--line); }
+.section h2 { font-size: clamp(28px, 4vw, 38px); margin: 14px 0 36px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  font: 500 14.5px/1 var(--mono);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color .15s, background .15s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: #04140b; border-color: var(--accent); }
+.btn.primary:hover { background: #5be79a; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }

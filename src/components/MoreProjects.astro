@@ -1,0 +1,130 @@
+---
+type Area = "robotics" | "software" | "hardware";
+const gh = "https://github.com/pg1590/";
+const projects: { area: Area; title: string; desc: string; stack: string; repo: string }[] = [
+  {
+    area: "robotics", title: "Drone-Chasing Drone",
+    desc: "A Tello detects another drone with YOLOv8 and pursues it with PID control across figure-8, helix, spiral, and zig-zag paths.",
+    stack: "Python · YOLOv8 · OpenCV · djitellopy", repo: "vision-based-target-following-drone-sim",
+  },
+  {
+    area: "robotics", title: "MathWorks Minidrone Line Follower",
+    desc: "Competition finalist (India 2025): red-line tracking, arc look-ahead, and landing-marker detection for a Parrot minidrone.",
+    stack: "MATLAB · Simulink · Stateflow", repo: "mathworks-minidrone-line-follower",
+  },
+  {
+    area: "software", title: "Unix Shell",
+    desc: "A shell in C with pipes, I/O redirection, background jobs, signal handling, and custom built-ins on /proc.",
+    stack: "C · Linux · POSIX", repo: "C-shell",
+  },
+  {
+    area: "software", title: "xv6 Kernel Extensions",
+    desc: "New syscalls for syscall counting and alarms, plus lottery and MLFQ schedulers with performance analysis.",
+    stack: "C · RISC-V · OS internals", repo: "Xv6",
+  },
+  {
+    area: "software", title: "AI Claims Assessment",
+    desc: "Car-insurance claim triage: YOLOv8 damage detection, severity and cost estimation, and fraud checks in a Streamlit app.",
+    stack: "Python · YOLOv8 · Streamlit", repo: "AI-CLAIMS-ASSESMENT-FOR-CAR-INSURANCE",
+  },
+  {
+    area: "software", title: "Cancer Risk Stratification",
+    desc: "X-ray based risk scoring with an ML pipeline behind a role-based web app for patients, doctors, and radiologists.",
+    stack: "Python · XGBoost · React · Node.js", repo: "Cancer-Stratification-System",
+  },
+  {
+    area: "hardware", title: "RISC-V Core",
+    desc: "Sequential and pipelined RISC-V processors in Verilog with data forwarding and hazard detection.",
+    stack: "Verilog · GTKWave", repo: "RISC-V-Core",
+  },
+  {
+    area: "hardware", title: "32×32 SRAM with Decoder",
+    desc: "Transistor-level 6T SRAM macro with a 5:32 decoder and sense amplifier: 78.3 ps end to end at 0.9 V.",
+    stack: "Cadence Virtuoso · 30 nm CMOS", repo: "32x32-SRAM-Module-with-a-Decoder",
+  },
+  {
+    area: "hardware", title: "Four-Stage Audio Amplifier",
+    desc: "Pre-amp, gain, band-pass, and Class-AB power stages, simulated in LTspice and built in hardware.",
+    stack: "LTspice · Analog design", repo: "4-stage-Audio-Amp-",
+  },
+];
+const filters: { id: "all" | Area; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "robotics", label: "Robotics" },
+  { id: "software", label: "Software" },
+  { id: "hardware", label: "Hardware" },
+];
+---
+
+<section class="section" id="projects">
+  <div class="wrap" data-projects>
+    <p class="label">// More projects</p>
+    <div class="head">
+      <h2>Everything else</h2>
+      <div class="filters" role="group" aria-label="Filter projects">
+        {filters.map((f, i) => (
+          <button type="button" class="chip" data-filter={f.id} aria-pressed={i === 0 ? "true" : "false"}>{f.label}</button>
+        ))}
+      </div>
+    </div>
+
+    <ul class="grid">
+      {projects.map((p) => (
+        <li data-area={p.area}>
+          <a href={gh + p.repo} class="card">
+            <span class="area">{p.area}</span>
+            <h3>{p.title}</h3>
+            <p>{p.desc}</p>
+            <span class="stack">{p.stack}</span>
+            <span class="arrow" aria-hidden="true">↗</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="all">All repositories are on <a href="https://github.com/pg1590?tab=repositories">GitHub</a>.</p>
+  </div>
+</section>
+
+<style>
+  .head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
+  .head h2 { margin-bottom: 0; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font: 400 13px var(--mono); color: var(--muted); background: transparent;
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer;
+  }
+  .chip:hover { color: var(--text); border-color: var(--muted); }
+  .chip[aria-pressed="true"] { color: #04140b; background: var(--accent); border-color: var(--accent); }
+
+  .grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .grid li[hidden] { display: none; }
+  .card {
+    position: relative; display: flex; flex-direction: column; height: 100%;
+    padding: 20px 20px 18px; text-decoration: none;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    transition: border-color .15s, transform .15s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  @media (prefers-reduced-motion: reduce) { .card:hover { transform: none; } }
+  .area { font: 500 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--amber); }
+  .card h3 { font-size: 18px; margin: 10px 0 8px; padding-right: 20px; }
+  .card p { color: var(--muted); font-size: 14.5px; line-height: 1.55; margin: 0 0 14px; flex: 1; }
+  .stack { font: 400 12.5px var(--mono); color: var(--muted); }
+  .arrow { position: absolute; top: 18px; right: 18px; color: var(--muted); transition: color .15s; }
+  .card:hover .arrow { color: var(--accent); }
+  .all { margin: 24px 0 0; color: var(--muted); font-size: 14.5px; }
+  .all a { color: var(--accent); text-decoration: none; }
+  .all a:hover { text-decoration: underline; }
+</style>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>("[data-projects]")) {
+    const chips = root.querySelectorAll<HTMLButtonElement>("[data-filter]");
+    const items = root.querySelectorAll<HTMLLIElement>("[data-area]");
+    chips.forEach((c) => c.addEventListener("click", () => {
+      const f = c.dataset.filter;
+      chips.forEach((o) => o.setAttribute("aria-pressed", String(o === c)));
+      items.forEach((li) => (li.hidden = f !== "all" && li.dataset.area !== f));
+    }));
+  }
+</script>

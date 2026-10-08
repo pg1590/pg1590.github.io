@@ -1,0 +1,122 @@
+% General one-page resume (SWE + robotics). Build: pdflatex resume.tex
+\documentclass[letterpaper,10pt]{article}
+
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+\definecolor{accent}{RGB}{180,40,30}
+
+\addtolength{\oddsidemargin}{-0.55in}
+\addtolength{\evensidemargin}{-0.55in}
+\addtolength{\textwidth}{1.1in}
+\addtolength{\topmargin}{-0.6in}
+\addtolength{\textheight}{1.2in}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+\pagestyle{empty}
+
+\titleformat{\section}{\color{accent}\large\bfseries}{}{0em}{}[\color{black}\titlerule]
+\titlespacing{\section}{0pt}{6pt}{4pt}
+
+\setlist[itemize]{leftmargin=0.15in, itemsep=0.5pt, topsep=1pt, parsep=0pt, label=\textbullet}
+
+% \entry{Title}{Date}{Subtitle}{Location}
+\newcommand{\entry}[4]{%
+  \begin{tabularx}{\textwidth}{X r}
+    \textbf{#1} & #2 \\
+    \textit{\small #3} & \small #4 \\
+  \end{tabularx}\vspace{-3pt}}
+
+% \project{Name}{Stack}{Link}
+\newcommand{\project}[3]{%
+  \begin{tabularx}{\textwidth}{X r}
+    \textbf{#1} \,|\, \textit{\small #2} & \small\href{#3}{GitHub} \\
+  \end{tabularx}\vspace{-3pt}}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\scshape Prakhar Gupta} \\[3pt]
+  \small +91 9691190017 \;|\;
+  \href{mailto:prakhargupta058@gmail.com}{\underline{prakhargupta058@gmail.com}} \;|\;
+  \href{https://www.linkedin.com/in/prakhar-gupta-199744271/}{\underline{LinkedIn}} \;|\;
+  \href{https://github.com/pg1590}{\underline{github.com/pg1590}} \;|\;
+  \href{https://pg1590.github.io}{\underline{pg1590.github.io}}
+\end{center}
+\vspace{-6pt}
+
+\section{Education}
+\entry{International Institute of Information Technology, Hyderabad}{Expected May 2028}
+  {B.Tech + M.S. by Research in Electronics and Communication Engineering}{Hyderabad, India}
+
+\section{Experience}
+\entry{Machine Learning Engineer Intern}{Jul 2026 -- Aug 2026}{Latitude 54, Software Engineering Team}{Remote}
+\begin{itemize}
+  \item Owned the perception and decision layer of an autonomous-airspace simulation pipeline: a platform classifier and temporal intent model behind a two-function Python API used by three teammate-owned modules.
+  \item Designed a 2-layer, 4-head \textbf{Transformer} for sequence-level intent scoring (\textbf{0.987 ROC-AUC}) and a \textbf{PyTorch} MLP classifier with a confidence-thresholded UNKNOWN fallback.
+  \item Diagnosed and eliminated a \textbf{label-leakage} failure mode, and enforced one canonical windowing path for training and inference so train/serve skew became structurally impossible.
+  \item Shipped occlusion-based attribution, Monte-Carlo dropout uncertainty, versioned checkpoints, and a \textbf{37-test pytest suite}.
+\end{itemize}
+
+\entry{Undergraduate Researcher}{May 2025 -- Present}{Robotics Research Center (RRC), IIIT Hyderabad}{Hyderabad, India}
+\begin{itemize}
+  \item Designed and simulated multi-agent formation control (line, V, square) using PD controllers, rotation-frame offsets, and leader trajectory tracking.
+  \item Implemented collision avoidance via potential-field repulsion and time-to-collision prediction in \textbf{PyBullet}, tuned for real-time simulation.
+  \item Working on swarm drone tracking with multi-agent RL under Dr.\ Harikumar Kandath.
+\end{itemize}
+
+\entry{Teaching Assistant, Electronics Workshop 2}{Jan 2026 -- Present}{IIIT Hyderabad}{Hyderabad, India}
+
+\section{Projects}
+\project{RC Car Follower Drone}{Python, YOLOv8, OpenCV, Kalman Filter, PID, DJI Tello}{https://github.com/pg1590/UAV-Project}
+\begin{itemize}
+  \item Built a real-flight follower: a custom-trained \textbf{YOLOv8s} detector (0.937 mAP50-95 on validation) runs every 4th frame, a \textbf{CSRT} tracker bridges detections, and a \textbf{Kalman filter} smooths the target state.
+  \item Closed the loop with three \textbf{PID} controllers (yaw, altitude, range) holding a 1\,m standoff from monocular range estimates; logged and analyzed flight data, identifying yaw-rate saturation as the limiting factor on turns.
+\end{itemize}
+
+\project{Multi-Agent Drone Swarm Coordination with Deep RL}{Python, PyBullet, MADDPG, MAPPO}{https://github.com/pg1590/Swarm-Drones-Detection-Tracking-Path-Prediction-and-Navigation}
+\begin{itemize}
+  \item Developed a decentralized multi-UAV framework for moving-target pursuit using \textbf{MADDPG} with centralized training and decentralized execution, and reward shaping for pursuit, collision avoidance, and formation stability; moving to recurrent \textbf{MAPPO}.
+\end{itemize}
+
+\project{AI Website Builder}{React, TypeScript, Express, Prisma, PostgreSQL, Stripe}{https://github.com/pg1590/AI-Website-Builder}
+\begin{itemize}
+  \item Built a full-stack platform that generates responsive websites from natural-language prompts, with conversational revisions, version history, and one-click rollback; deployed on Vercel.
+  \item Integrated \textbf{Stripe} Checkout and webhooks for credit-based billing, session-based auth, and protected REST APIs over \textbf{PostgreSQL} via Prisma.
+\end{itemize}
+
+\project{Unix Shell}{C, Linux, POSIX}{https://github.com/pg1590/C-shell}
+\begin{itemize}
+  \item Wrote a Unix-like shell with job control, signal handling (SIGINT, SIGTSTP), I/O redirection, and multi-stage pipes, plus custom utilities built on the Linux \texttt{/proc} filesystem.
+\end{itemize}
+
+\project{Systolic GEMM Accelerators on Alveo U50 FPGA}{C++, Vitis HLS, XRT, HBM}{https://github.com/pg1590/HLS-GEMM-Accelerators-on-AMD-Xilinx-FPGA}
+\begin{itemize}
+  \item Built and benchmarked 10 GEMM kernel variants; a 32$\times$32 systolic array sustains 1,024 MACs/cycle at II=1, and dataflow with ping-pong buffering cut DSP usage 2.5$\times$ while hiding load latency.
+\end{itemize}
+
+\section{Technical Skills}
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+  \textbf{Languages:}\; & Python, C/C++, TypeScript/JavaScript, SQL, MATLAB, Verilog \\
+  \textbf{ML \& Vision:}\; & PyTorch, Transformers, YOLOv8, OpenCV, scikit-learn, XGBoost, SHAP \\
+  \textbf{Robotics:}\; & PID and Kalman filtering, multi-agent RL (MADDPG/MAPPO), PyBullet, Simulink/Stateflow, DJI Tello SDK \\
+  \textbf{Web \& Backend:}\; & React, Node.js, Express, REST APIs, Prisma, PostgreSQL, MongoDB \\
+  \textbf{Tools:}\; & Git, Linux, Docker, GitHub Actions, pytest, Vitis HLS \\
+\end{tabularx}
+
+\section{Achievements}
+\begin{itemize}
+  \item \textbf{Finalist}, MathWorks Minidrone Competition (India, 2025): vision-based line following and landing in Simulink/Stateflow.
+  \item \textbf{Represented India} in chess at the Commonwealth Games; 13+ years as an international chess player (\href{https://ratings.fide.com/profile/35062239}{\underline{FIDE profile}}).
+  \item State top 1\% in the Physics Olympiad; Head Coordinator of The Dance Crew, IIIT Hyderabad.
+\end{itemize}
+
+\end{document}

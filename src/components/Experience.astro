@@ -1,0 +1,73 @@
+---
+const roles = [
+  {
+    title: "Machine Learning Engineer Intern",
+    org: "Latitude 54 · Software Engineering",
+    when: "Jul – Aug 2026",
+    where: "Remote",
+    points: [
+      "Owned the perception and decision layer of an autonomous-airspace simulation pipeline, exposed as a two-function Python API used by three teammates' modules.",
+      "Built a 2-layer, 4-head Transformer for sequence-level intent scoring (0.987 ROC-AUC) and a PyTorch MLP classifier with a confidence-thresholded UNKNOWN fallback.",
+      "Found and removed a label-leakage bug where one context flag was perfectly correlated with the label, and unified training and inference windowing to prevent train/serve skew.",
+      "Shipped feature attribution, Monte-Carlo dropout uncertainty, versioned checkpoints, and a 37-test pytest suite.",
+    ],
+  },
+  {
+    title: "Undergraduate Researcher",
+    org: "Robotics Research Center, IIIT Hyderabad",
+    when: "May 2025 – Present",
+    where: "Hyderabad",
+    points: [
+      "Multi-agent formation control (line, V, square) with PD controllers, rotation-frame offsets, and leader trajectory tracking.",
+      "Collision avoidance with potential-field repulsion and time-to-collision prediction in PyBullet, tuned for real-time simulation.",
+      "Now working on swarm drone tracking with multi-agent RL, advised by Dr. Harikumar Kandath.",
+    ],
+  },
+  {
+    title: "Teaching Assistant, Electronics Workshop 2",
+    org: "IIIT Hyderabad",
+    when: "Jan 2026 – Present",
+    where: "Hyderabad",
+    points: ["Mentor second-year students through analog and digital hardware builds."],
+  },
+];
+---
+
+<section class="section" id="experience">
+  <div class="wrap">
+    <p class="label">// Experience</p>
+    <h2>Where I've worked</h2>
+    <ol class="roles">
+      {roles.map((r) => (
+        <li class="role">
+          <div class="meta">
+            <span>{r.when}</span>
+            <span>{r.where}</span>
+          </div>
+          <div>
+            <h3>{r.title}</h3>
+            <p class="org">{r.org}</p>
+            <ul>{r.points.map((p) => <li>{p}</li>)}</ul>
+          </div>
+        </li>
+      ))}
+    </ol>
+    <p class="edu">
+      <span class="label">Education</span>
+      B.Tech + M.S. by Research in Electronics &amp; Communication Engineering, IIIT Hyderabad · expected 2028
+    </p>
+  </div>
+</section>
+
+<style>
+  .roles { list-style: none; margin: 0; padding: 0; display: grid; gap: 40px; }
+  .role { display: grid; grid-template-columns: 170px 1fr; gap: 24px; }
+  @media (max-width: 640px) { .role { grid-template-columns: 1fr; gap: 8px; } }
+  .meta { display: flex; flex-direction: column; gap: 4px; font: 400 13.5px var(--mono); color: var(--muted); padding-top: 3px; }
+  @media (max-width: 640px) { .meta { flex-direction: row; gap: 14px; } }
+  h3 { font-size: 20px; }
+  .org { margin: 4px 0 12px; color: var(--accent); font-size: 15px; }
+  .role ul { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 6px; }
+  .role ul li::marker { color: color-mix(in srgb, var(--accent) 55%, transparent); }
+  .edu { margin: 48px 0 0; padding-top: 24px; border-top: 1px dashed var(--line); color: var(--muted); display: flex; gap: 16px; flex-wrap: wrap; align-items: baseline; }
+</style>
